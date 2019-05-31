@@ -120,7 +120,7 @@ Insight.functions = {
 
       log.debug("Thresholds DataOut: " .. to_json(data_out))
 
-      return to_json(data_out)
+      return {{data_out}}
     end
   }
 }
