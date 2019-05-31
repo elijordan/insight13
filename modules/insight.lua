@@ -103,8 +103,6 @@ Insight.functions = {
       data_out.value = { value = dp.value }
       data_out.tags = {}
 
-
-
       log.debug("Thresholds Request: " .. to_json(request))
 
       if dp.value  >= constants.Max then
@@ -120,7 +118,16 @@ Insight.functions = {
 
       log.debug("Thresholds DataOut: " .. to_json(data_out))
 
-      return {{data_out}}
+      -- Retrieve previous level
+      local previous_state = Keystore.get({key = data_out.generated}).value
+
+      -- If the state has not changed, do nothing, else, set new state and push
+      if tonumber(previous_state) == tonumber(data_out.value.level) then
+        return {{}}
+      else
+        Keystore.set({key = data_out.generated, value = data_out.value.level})
+        return {{data_out}}
+      end
     end
   }
 }
