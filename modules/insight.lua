@@ -3,9 +3,64 @@
 local Insight = {}
 
 Insight.functions = {
+  join = {
+    name = "Join",
+    description = "Adds last recorded and newly reported values together",
+    type = "transform",
+    history = {
+      limit = {
+        value = "2"
+      }
+    },
+    inlets = {
+      {
+        name = "Input Signal 1",
+        description = "Input signal 1",
+        primitive_type = "NUMBER"
+      },
+      {
+        name = "Input Signal 1",
+        description = "Input signal 1",
+        primitive_type = "NUMBER"
+      },
+    },
+    outlets = {
+      data_type = "NUMBER"
+    },
+    fn = function(request)
+      local data_in = request.data
+      local constants = request.args.constants
+      local history = request.history
+      local data_out = {}
+
+      log.debug("Request: " .. to_json(request))
+      log.debug("Data In: " .. to_json(data_in))
+
+      -- Iterate over new datapoints ("array")
+      for _, dp in ipairs(data_in) do
+        -- Iterate to each signal's history object (table)
+        for key, object in pairs(history) do
+          -- Iterate through given signal's data history ("array")
+          for i, val in ipairs(object) do
+            -- Assume desired value comes in the second array index from an inlet (not outlet)
+            if i == 2 and val.tags.inlet == "0" then
+              dp.value = dp.value + val.value
+            end
+            -- Each signal value in dataOUT should keep the incoming metadata
+            table.insert(data_out, dp)
+          end
+        end
+      end
+
+      log.debug("Join DataOut: " .. to_json({data_out}))
+
+      return {data_out}
+    end
+  },
   adder = {
     name = "Adder",
     description = "Adds last recorded and newly reported values together",
+    type = "transform",
     constants = {
       {
         name = "limit",
@@ -33,8 +88,6 @@ Insight.functions = {
       local constants = request.args.constants
       local history = request.history
       local data_out = {}
-
-      log.debug("Adder Request: " .. to_json(request))
 
       -- Iterate over new datapoints ("array")
       for _, dp in ipairs(data_in) do
@@ -103,8 +156,6 @@ Insight.functions = {
       data_out.value = { value = dp.value }
       data_out.tags = {}
 
-      log.debug("Thresholds Request: " .. to_json(request))
-
       if dp.value  >= constants.Max then
         data_out.value.level = constants.level
         data_out.value.type = "Maximum threshold breach"
@@ -115,8 +166,6 @@ Insight.functions = {
         data_out.value.level = 0
         data_out.value.type = "Within threshold bounds"
       end
-
-      log.debug("Thresholds DataOut: " .. to_json(data_out))
 
       -- Retrieve previous level
       local previous_state = Keystore.get({key = data_out.generated}).value
