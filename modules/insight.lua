@@ -57,59 +57,6 @@ Insight.functions = {
       return {data_out}
     end
   },
-  adder = {
-    name = "Adder",
-    description = "Adds last recorded and newly reported values together",
-    type = "transform",
-    constants = {
-      {
-        name = "limit",
-        description = "Number of historical datapoints to include",
-        type = "number"
-      }
-    },
-    history = {
-      limit = {
-        constant = "limit"
-      }
-    },
-    inlets = {
-      {
-        name = "Input Signal",
-        description = "Input signal",
-        primitive_type = "NUMBER"
-      }
-    },
-    outlets = {
-      data_type = "NUMBER"
-    },
-    fn = function(request)
-      local data_in = request.data
-      local constants = request.args.constants
-      local history = request.history
-      local data_out = {}
-
-      -- Iterate over new datapoints ("array")
-      for _, dp in ipairs(data_in) do
-        -- Iterate to each signal's history object (table)
-        for key, object in pairs(history) do
-          -- Iterate through given signal's data history ("array")
-          for i, val in ipairs(object) do
-            -- Assume desired value comes in the second array index from an inlet (not outlet)
-            if i == 2 and val.tags.inlet == "0" then
-              dp.value = dp.value + val.value
-            end
-            -- Each signal value in dataOUT should keep the incoming metadata
-            table.insert(data_out, dp)
-          end
-        end
-      end
-
-      log.debug("Adder DataOut: " .. to_json({data_out}))
-
-      return {data_out}
-    end
-  },
   thresholds = {
     name = "Min/max thresholds",
     description = "Sets threshold bounds beyond which an alert state is generated",
