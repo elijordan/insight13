@@ -9,7 +9,7 @@ Insight.functions = {
     type = "transform",
     history = {
       limit = {
-        value = "2"
+        value = "1"
       }
     },
     inlets = {
@@ -19,8 +19,8 @@ Insight.functions = {
         primitive_type = "NUMBER"
       },
       {
-        name = "Input Signal 1",
-        description = "Input signal 1",
+        name = "Input Signal 2",
+        description = "Input signal 2",
         primitive_type = "NUMBER"
       },
     },
@@ -43,7 +43,7 @@ Insight.functions = {
           -- Iterate through given signal's data history ("array")
           for i, val in ipairs(object) do
             -- Assume desired value comes in the second array index from an inlet (not outlet)
-            if i == 2 and val.tags.inlet == "0" then
+            if val.tags.inlet == "0" then
               dp.value = dp.value + val.value
             end
             -- Each signal value in dataOUT should keep the incoming metadata
